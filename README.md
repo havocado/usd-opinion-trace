@@ -4,6 +4,17 @@ A CLI and GUI tool that traces USD attribute opinion resolution and explains why
 
 ## Installation
 
+The simplest way to use this tool is to install directly from Github and run the GUI:
+```bash
+# Install from Github
+pip install git+https://github.com/havocado/usd-opinion-trace.git
+
+# Run the GUI
+usd-opinion-trace-gui
+```
+
+Or clone this repo and manually install:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -12,12 +23,6 @@ Or install as a package:
 
 ```bash
 pip install -e .
-```
-
-Or install directly from GitHub:
-
-```bash
-pip install git+https://github.com/<username>/<repo>.git
 ```
 
 ## GUI Usage
