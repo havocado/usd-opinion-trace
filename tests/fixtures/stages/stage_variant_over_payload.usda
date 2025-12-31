@@ -1,0 +1,15 @@
+#usda 1.0
+
+def Xform "ExampleAsset" (
+    prepend payload = @../shared/ref_target.usda@</ExampleAsset>
+    variants = {
+        string exampleVariant = "big"
+    }
+    prepend variantSets = "exampleVariant"
+) {
+    variantSet "exampleVariant" = {
+        "big" {
+            double size = 2.0
+        }
+    }
+}

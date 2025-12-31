@@ -1,0 +1,7 @@
+#usda 1.0
+
+def Xform "ExampleAsset" (
+    active = false
+) {
+    double size = 1.0
+}

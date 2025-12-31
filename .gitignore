@@ -1,0 +1,14 @@
+# Virtual environment
+usd_env/
+
+# pytest cache
+.pytest_cache/
+
+# Python cache
+__pycache__/
+
+# Coverage reports
+.coverage
+htmlcov/
+coverage.xml
+*.cover

@@ -1,0 +1,19 @@
+#usda 1.0
+
+class "_ExampleClass" {
+    double size = 2.0
+}
+
+def Xform "ExampleAsset" (
+    prepend inherits = </_ExampleClass>
+    variants = {
+        string exampleVariant = "small"
+    }
+    prepend variantSets = "exampleVariant"
+) {
+    variantSet "exampleVariant" = {
+        "small" {
+            double size = 1.0
+        }
+    }
+}

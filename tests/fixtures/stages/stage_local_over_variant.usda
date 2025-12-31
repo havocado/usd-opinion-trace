@@ -1,0 +1,16 @@
+#usda 1.0
+
+def Xform "ExampleAsset" (
+    variants = {
+        string exampleVariant = "small"
+    }
+    prepend variantSets = "exampleVariant"
+) {
+    double size = 2.0
+
+    variantSet "exampleVariant" = {
+        "small" {
+            double size = 1.0
+        }
+    }
+}

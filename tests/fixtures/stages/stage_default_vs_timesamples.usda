@@ -1,0 +1,10 @@
+#usda 1.0
+(
+    subLayers = [
+        @../shared/sublayer_with_timesamples.usda@
+    ]
+)
+
+def Xform "ExampleAsset" {
+    double size = 2.0
+}

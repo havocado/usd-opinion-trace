@@ -1,0 +1,11 @@
+#usda 1.0
+
+def Xform "RefSource" {
+    double size = 2.0
+}
+
+def Xform "ExampleAsset" (
+    prepend references = </RefSource>
+    prepend payload = @../shared/ref_target.usda@</ExampleAsset>
+) {
+}

@@ -1,0 +1,17 @@
+#usda 1.0
+
+def Xform "RefA" {
+    double size = 2.0
+}
+
+def Xform "RefB" {
+    double size = 1.0
+}
+
+def Xform "ExampleAsset" (
+    prepend references = [
+        </RefA>,
+        </RefB>
+    ]
+) {
+}

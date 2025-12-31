@@ -1,0 +1,11 @@
+#usda 1.0
+
+class "_ExampleBase" {
+    double size = 1.0
+}
+
+def Xform "ExampleAsset" (
+    prepend specializes = </_ExampleBase>
+) {
+    double size = 2.0
+}

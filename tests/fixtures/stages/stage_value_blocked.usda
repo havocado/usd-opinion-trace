@@ -1,0 +1,10 @@
+#usda 1.0
+(
+    subLayers = [
+        @../shared/sublayer_weak.usda@
+    ]
+)
+
+over "ExampleAsset" {
+    double size = None
+}
