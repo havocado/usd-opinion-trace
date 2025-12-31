@@ -13,7 +13,7 @@ pip install git+https://github.com/havocado/usd-opinion-trace.git
 usd-opinion-trace-gui
 ```
 
-Or clone this repo and manually install:
+Otherwise, clone this repo and manually install:
 
 ```bash
 pip install -r requirements.txt
