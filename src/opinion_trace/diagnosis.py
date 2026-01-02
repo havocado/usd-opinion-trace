@@ -11,6 +11,51 @@ from .extraction import ExtractionResult, OpinionInfo
 from .reason_codes import REASON_CODES, get_reason_detail, get_suggestions
 
 
+# LIVRPS ordering: Local > Inherit > Variant > Reference > Payload > Specialize
+# Lower index = stronger (wins)
+LIVRPS_ORDER = {
+    "Local": 0,
+    "Inherit": 1,
+    "Variant": 2,
+    "Relocate": 3,  # Between Variant and Reference
+    "Reference": 4,
+    "Payload": 5,
+    "Specialize": 6,
+}
+
+
+def check_livrps_violation(opinions: list[OpinionInfo]) -> bool:
+    """
+    Check if the opinion stack violates LIVRPS ordering.
+    
+    LIVRPS order: Local > Inherit > Variant > Reference > Payload > Specialize
+    A violation occurs when a weaker arc type appears before (wins over) 
+    a stronger arc type in the stack.
+    
+    Args:
+        opinions: List of opinions ordered by strength (index 0 = winner)
+        
+    Returns:
+        True if LIVRPS order is violated, False if order is correct
+    """
+    if len(opinions) < 2:
+        return False
+    
+    for i in range(len(opinions) - 1):
+        current_arc = opinions[i].arc_type
+        next_arc = opinions[i + 1].arc_type
+        
+        # Get LIVRPS rank (lower = stronger)
+        current_rank = LIVRPS_ORDER.get(current_arc, 0)
+        next_rank = LIVRPS_ORDER.get(next_arc, 0)
+        
+        # Violation: a weaker arc (higher rank) is winning over a stronger arc (lower rank)
+        if current_rank > next_rank:
+            return True
+    
+    return False
+
+
 @dataclass
 class DiagnosisResult:
     """Result of diagnosing why a user's opinion is blocked."""
@@ -21,6 +66,7 @@ class DiagnosisResult:
     reason: str                     # reason code
     reason_detail: str
     suggestions: list[str]
+    does_not_follow_livrps_order: bool  # True if opinion stack violates LIVRPS ordering
 
 
 def diagnose(extraction: ExtractionResult, user_layer: str) -> DiagnosisResult | None:
@@ -49,6 +95,7 @@ def diagnose(extraction: ExtractionResult, user_layer: str) -> DiagnosisResult |
             reason="no_opinion_in_user_layer",
             reason_detail=get_reason_detail("no_opinion_in_user_layer"),
             suggestions=get_suggestions("no_opinion_in_user_layer"),
+            does_not_follow_livrps_order=check_livrps_violation(extraction.opinions),
         )
     
     # 2. User is winner?
@@ -61,6 +108,7 @@ def diagnose(extraction: ExtractionResult, user_layer: str) -> DiagnosisResult |
             reason="user_opinion_is_winning",
             reason_detail=get_reason_detail("user_opinion_is_winning"),
             suggestions=get_suggestions("user_opinion_is_winning"),
+            does_not_follow_livrps_order=check_livrps_violation(extraction.opinions),
         )
     
     winner = extraction.opinions[0]
@@ -76,6 +124,7 @@ def diagnose(extraction: ExtractionResult, user_layer: str) -> DiagnosisResult |
         reason=reason,
         reason_detail=get_reason_detail(reason),
         suggestions=get_suggestions(reason),
+        does_not_follow_livrps_order=check_livrps_violation(extraction.opinions),
     )
 
 

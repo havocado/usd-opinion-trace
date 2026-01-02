@@ -1,0 +1,23 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    doc = "Shot file demonstrating all LIVRPS composition arcs"
+    subLayers = [
+        @./classes/_class.usda@
+    ]
+)
+
+def Xform "World"
+{
+    def "Avocado" (
+        prepend references = @./assets/avocado/avocado.usda@</Avocado>
+        variants = {
+            string expression = "havoc_mode"
+        }
+    )
+    {
+        double3 xformOp:translate = (5, 2, -3) (
+            doc = "Local opinion - overrides reference default"
+        )
+    }
+}

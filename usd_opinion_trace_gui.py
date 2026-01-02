@@ -12,13 +12,14 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QTextEdit, QCheckBox, QSpinBox,
     QFileDialog, QGroupBox, QFormLayout, QMessageBox, QComboBox,
-    QCompleter, QTabWidget
+    QCompleter, QTabWidget, QSplitter
 )
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QFont, QColor
 
 from opinion_trace.extraction import extract_opinions
 from opinion_trace.diagnosis import diagnose
+from opinion_trace.helpful_texts import HELPFUL_TEXTS
 
 
 class StageLoaderThread(QThread):
@@ -64,8 +65,8 @@ class MainWindow(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("USD Opinion Trace")
-        self.setMinimumSize(700, 650)
+        self.setWindowTitle("USD Opinion Trace by havocado")
+        self.setMinimumSize(1200, 700)
         
         # Cache for prim->attributes mapping
         self.prim_attrs_cache = {}
@@ -74,14 +75,22 @@ class MainWindow(QMainWindow):
         # Create central widget and main layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
+        main_layout = QHBoxLayout(central_widget)
         main_layout.setSpacing(10)
         main_layout.setContentsMargins(15, 15, 15, 15)
         
+        # =====================================================================
+        # LEFT COLUMN: Input, Run Button, Opinion Stack, JSON
+        # =====================================================================
+        left_column = QWidget()
+        left_layout = QVBoxLayout(left_column)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(10)
+        
         # Input section
         input_group = QGroupBox("Query Parameters")
-        input_layout = QFormLayout(input_group)
-        input_layout.setSpacing(8)
+        input_form = QFormLayout(input_group)
+        input_form.setSpacing(8)
         
         # Stage file picker (auto-loads on Enter or focus loss)
         stage_row = QHBoxLayout()
@@ -94,7 +103,7 @@ class MainWindow(QMainWindow):
         stage_browse.clicked.connect(self.browse_stage)
         stage_row.addWidget(self.stage_input)
         stage_row.addWidget(stage_browse)
-        input_layout.addRow("Stage File:", stage_row)
+        input_form.addRow("Stage File:", stage_row)
         
         # Prim path input - editable combobox
         self.prim_path_input = QComboBox()
@@ -109,7 +118,7 @@ class MainWindow(QMainWindow):
         self.prim_completer.setCompletionMode(QCompleter.PopupCompletion)
         # Update attributes when prim selection changes
         self.prim_path_input.currentTextChanged.connect(self.on_prim_changed)
-        input_layout.addRow("Prim Path:", self.prim_path_input)
+        input_form.addRow("Prim Path:", self.prim_path_input)
         
         # Attribute input - editable combobox
         self.attribute_input = QComboBox()
@@ -122,7 +131,7 @@ class MainWindow(QMainWindow):
         self.attr_completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.attr_completer.setFilterMode(Qt.MatchContains)
         self.attr_completer.setCompletionMode(QCompleter.PopupCompletion)
-        input_layout.addRow("Attribute:", self.attribute_input)
+        input_form.addRow("Attribute:", self.attribute_input)
         
         # Layer file picker
         layer_row = QHBoxLayout()
@@ -133,7 +142,7 @@ class MainWindow(QMainWindow):
         layer_browse.clicked.connect(self.browse_layer)
         layer_row.addWidget(self.layer_input)
         layer_row.addWidget(layer_browse)
-        input_layout.addRow("User Layer:", layer_row)
+        input_form.addRow("User Layer:", layer_row)
         
         # Time input (optional)
         time_row = QHBoxLayout()
@@ -146,13 +155,13 @@ class MainWindow(QMainWindow):
         time_row.addWidget(self.time_checkbox)
         time_row.addWidget(self.time_spinbox)
         time_row.addStretch()
-        input_layout.addRow("Time:", time_row)
+        input_form.addRow("Time:", time_row)
         
         # Stack-only checkbox
         self.stack_only_checkbox = QCheckBox("Stack only (no diagnosis)")
-        input_layout.addRow("Options:", self.stack_only_checkbox)
+        input_form.addRow("Options:", self.stack_only_checkbox)
         
-        main_layout.addWidget(input_group)
+        left_layout.addWidget(input_group)
         
         # Run button
         button_layout = QHBoxLayout()
@@ -162,40 +171,90 @@ class MainWindow(QMainWindow):
         self.run_button.clicked.connect(self.run_trace)
         button_layout.addWidget(self.run_button)
         button_layout.addStretch()
-        main_layout.addLayout(button_layout)
+        left_layout.addLayout(button_layout)
         
-        # Output section with tabs
-        output_group = QGroupBox("Output")
-        output_layout = QVBoxLayout(output_group)
+        # Opinion Stack results
+        stack_group = QGroupBox("Opinion Stack")
+        stack_layout = QVBoxLayout(stack_group)
         
-        # Create tab widget for Summary and JSON views
-        self.output_tabs = QTabWidget()
+        self.stack_display = QTextEdit()
+        self.stack_display.setReadOnly(True)
+        self.stack_display.setFont(QFont("Sans Serif", 10))
+        self.stack_display.setPlaceholderText("Opinion stack will appear here...")
+        stack_layout.addWidget(self.stack_display)
         
-        # Summary tab - human-friendly output
-        self.summary_display = QTextEdit()
-        self.summary_display.setReadOnly(True)
-        self.summary_display.setFont(QFont("Sans Serif", 10))
-        self.summary_display.setPlaceholderText("Human-friendly diagnosis will appear here...")
-        self.output_tabs.addTab(self.summary_display, "Summary")
+        # Copy stack button
+        copy_stack_layout = QHBoxLayout()
+        copy_stack_layout.addStretch()
+        copy_stack_button = QPushButton("Copy Stack")
+        copy_stack_button.clicked.connect(lambda: self.copy_to_clipboard(self.stack_display))
+        copy_stack_layout.addWidget(copy_stack_button)
+        stack_layout.addLayout(copy_stack_layout)
         
-        # JSON tab - detailed output
+        left_layout.addWidget(stack_group, stretch=1)
+        
+        # =====================================================================
+        # RIGHT COLUMN: Diagnosis and JSON Details in tabs
+        # =====================================================================
+        right_group = QGroupBox("Analysis")
+        right_layout = QVBoxLayout(right_group)
+        
+        # Tab widget for Diagnosis and JSON
+        self.right_tabs = QTabWidget()
+        
+        # Diagnosis tab
+        diagnosis_widget = QWidget()
+        diagnosis_layout = QVBoxLayout(diagnosis_widget)
+        diagnosis_layout.setContentsMargins(0, 0, 0, 0)
+        
+        self.diagnosis_display = QTextEdit()
+        self.diagnosis_display.setReadOnly(True)
+        self.diagnosis_display.setFont(QFont("Sans Serif", 10))
+        self.diagnosis_display.setPlaceholderText("Diagnosis will appear here...\n\nSpecify a User Layer and run the trace to see diagnosis.")
+        diagnosis_layout.addWidget(self.diagnosis_display)
+        
+        # Copy diagnosis button
+        copy_diag_layout = QHBoxLayout()
+        copy_diag_layout.addStretch()
+        copy_diag_button = QPushButton("Copy Diagnosis")
+        copy_diag_button.clicked.connect(lambda: self.copy_to_clipboard(self.diagnosis_display))
+        copy_diag_layout.addWidget(copy_diag_button)
+        diagnosis_layout.addLayout(copy_diag_layout)
+        
+        self.right_tabs.addTab(diagnosis_widget, "Diagnosis")
+        
+        # JSON Details tab
+        json_widget = QWidget()
+        json_layout = QVBoxLayout(json_widget)
+        json_layout.setContentsMargins(0, 0, 0, 0)
+        
         self.json_display = QTextEdit()
         self.json_display.setReadOnly(True)
-        self.json_display.setFont(QFont("monospace", 10))
+        self.json_display.setFont(QFont("monospace", 9))
         self.json_display.setPlaceholderText("JSON results will appear here...")
-        self.output_tabs.addTab(self.json_display, "JSON Details")
+        json_layout.addWidget(self.json_display)
         
-        output_layout.addWidget(self.output_tabs)
+        # Copy JSON button
+        copy_json_layout = QHBoxLayout()
+        copy_json_layout.addStretch()
+        copy_json_button = QPushButton("Copy JSON")
+        copy_json_button.clicked.connect(lambda: self.copy_to_clipboard(self.json_display))
+        copy_json_layout.addWidget(copy_json_button)
+        json_layout.addLayout(copy_json_layout)
         
-        # Copy button
-        copy_layout = QHBoxLayout()
-        copy_layout.addStretch()
-        copy_button = QPushButton("Copy to Clipboard")
-        copy_button.clicked.connect(self.copy_output)
-        copy_layout.addWidget(copy_button)
-        output_layout.addLayout(copy_layout)
+        self.right_tabs.addTab(json_widget, "JSON Details")
         
-        main_layout.addWidget(output_group, stretch=1)
+        right_layout.addWidget(self.right_tabs)
+        
+        # =====================================================================
+        # Add columns to main layout with splitter
+        # =====================================================================
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.addWidget(left_column)
+        splitter.addWidget(right_group)
+        splitter.setSizes([600, 600])
+        
+        main_layout.addWidget(splitter)
     
     def browse_stage(self):
         """Open file dialog to select USD stage file."""
@@ -259,7 +318,7 @@ class MainWindow(QMainWindow):
         count_msg = f"Loaded {len(prims)} prims"
         if len(prims) >= 5000:
             count_msg += " (truncated)"
-        self.summary_display.setPlainText(count_msg)
+        self.stack_display.setPlainText(count_msg)
     
     def on_stage_load_error(self, error_msg: str):
         """Handle stage loading error."""
@@ -320,9 +379,10 @@ class MainWindow(QMainWindow):
         time_code = self.time_spinbox.value() if self.time_checkbox.isChecked() else None
         stack_only = self.stack_only_checkbox.isChecked()
         
-        self.summary_display.clear()
+        self.stack_display.clear()
+        self.diagnosis_display.clear()
         self.json_display.clear()
-        self.summary_display.setPlainText("Running trace...")
+        self.stack_display.setPlainText("Running trace...")
         QApplication.processEvents()
         
         try:
@@ -331,7 +391,7 @@ class MainWindow(QMainWindow):
             
             if extraction.error:
                 result = {"error": extraction.error}
-                self.summary_display.setPlainText(f"Error: {extraction.error}")
+                self.stack_display.setPlainText(f"Error: {extraction.error}")
             else:
                 # Phase 2: Diagnose (unless stack-only)
                 diagnosis_result = None
@@ -341,16 +401,17 @@ class MainWindow(QMainWindow):
                 # Phase 3: Build output
                 result = self.build_output(extraction, diagnosis_result, user_layer)
                 
-                # Display human-friendly summary
-                summary_text = self.build_human_summary(extraction, diagnosis_result, user_layer)
-                self.summary_display.setHtml(summary_text)
+                # Display opinion stack (left column)
+                stack_text = self.build_stack_html(extraction, user_layer, diagnosis_result)
+                self.stack_display.setHtml(stack_text)
+                
+                # Display diagnosis (right column)
+                diagnosis_text = self.build_diagnosis_html(extraction, diagnosis_result, user_layer)
+                self.diagnosis_display.setHtml(diagnosis_text)
             
             # Display JSON result
             output_json = json.dumps(result, indent=2, default=str)
             self.json_display.setPlainText(output_json)
-            
-            # Switch to Summary tab
-            self.output_tabs.setCurrentIndex(0)
             
         except Exception as e:
             error_result = {
@@ -359,15 +420,14 @@ class MainWindow(QMainWindow):
                     "message": str(e)
                 }
             }
-            self.summary_display.setPlainText(f"Unexpected Error: {str(e)}")
+            self.stack_display.setPlainText(f"Unexpected Error: {str(e)}")
             self.json_display.setPlainText(json.dumps(error_result, indent=2))
     
-    def build_human_summary(self, extraction, diagnosis, user_layer: str | None) -> str:
-        """Build human-friendly HTML summary from extraction and diagnosis results."""
+    def build_stack_html(self, extraction, user_layer: str | None, diagnosis=None) -> str:
+        """Build HTML for the Opinion Stack panel (left column)."""
         lines = []
         
-        # Opinion stack first
-        lines.append("<h4>Opinion Stack</h4>")
+        # Opinion stack table
         if not extraction.opinions:
             lines.append("<p><i>No opinions found for this attribute.</i></p>")
         else:
@@ -422,7 +482,7 @@ class MainWindow(QMainWindow):
         
         lines.append("<hr>")
         
-        # Header section
+        # Header section (moved to bottom)
         lines.append(f"<h4>Opinion Trace for <code>{extraction.attr_name}</code></h4>")
         lines.append(f"<p><b>Prim:</b> <code>{extraction.prim_path}</code></p>")
         
@@ -437,59 +497,125 @@ class MainWindow(QMainWindow):
         if extraction.time_code is not None:
             lines.append(f"<p><b>Time Code:</b> {extraction.time_code}</p>")
         
-        # Diagnosis section
-        if diagnosis:
-            lines.append("<hr>")
-            lines.append("<h4>Diagnosis</h4>")
-            
-            # Get diagnosis as dict
-            if hasattr(diagnosis, '__dict__'):
-                d = diagnosis.__dict__
-            else:
-                d = diagnosis if isinstance(diagnosis, dict) else {}
-            
-            # User layer found status - main status indicator
-            user_found = d.get('user_layer_found', False)
-            blocker = d.get('blocker_layer')
-            
-            if user_found:
-                if blocker:
-                    # User layer is blocked
-                    lines.append("<p style='color: #d9534f; font-weight: bold; font-size: 14px;'>"
-                                 "⚠️ Your opinion is being blocked!</p>")
-                else:
-                    # User layer is winning
-                    lines.append("<p style='color: #5cb85c; font-weight: bold; font-size: 14px;'>"
-                                 "✓ Your opinion is winning</p>")
-            else:
-                lines.append("<p style='color: #f0ad4e;'>"
-                             "ℹ️ User layer not found in opinion stack</p>")
-            
-            # Reason
-            reason = d.get('reason')
-            if reason:
-                reason_display = reason.replace("_", " ").title()
-                lines.append(f"<p><b>Reason:</b> {reason_display}</p>")
-            
-            # Reason detail
-            reason_detail = d.get('reason_detail')
-            if reason_detail:
-                lines.append(f"<p style='color: #666;'>{reason_detail}</p>")
-            
-            # Blocking layer info
+        return "".join(lines)
+    
+    def build_diagnosis_html(self, extraction, diagnosis, user_layer: str | None) -> str:
+        """Build HTML for the Diagnosis panel (right column)."""
+        # Color scheme constants
+        COLOR_WARNING_HEADER = "#B45309"   # Dark amber
+        COLOR_ARC_TYPE = "#0369A1"         # Teal/Blue
+        COLOR_BLOCKED_PATH = "#6B7280"     # Medium gray
+        COLOR_IS_FOR_DESC = "#15803D"      # Forest green
+        COLOR_CONDITION = "#374151"        # Dark gray
+        COLOR_ARROW = "#0891B2"            # Teal
+        COLOR_ACTION = "#1E40AF"           # Dark blue
+        COLOR_EMPHASIS = "#7C3AED"         # Purple
+        COLOR_BG_ACCENT = "#F3F4F6"        # Very light gray
+        
+        lines = []
+        
+        if not diagnosis:
+            lines.append("<p><i>No diagnosis available.</i></p>")
+            lines.append("<p style='color: #666;'>Enable diagnosis by specifying a User Layer "
+                         "and unchecking 'Stack only'.</p>")
+            return "".join(lines)
+        
+        # Get diagnosis as dict
+        if hasattr(diagnosis, '__dict__'):
+            d = diagnosis.__dict__
+        else:
+            d = diagnosis if isinstance(diagnosis, dict) else {}
+        
+        # User layer found status - main status indicator
+        user_found = d.get('user_layer_found', False)
+        blocker = d.get('blocker_layer')
+        
+        if user_found:
             if blocker:
-                blocker_index = d.get('blocker_index', '?')
-                lines.append(f"<p><b>Blocked by:</b> <code>{blocker}</code> "
-                             f"(index {blocker_index})</p>")
+                # User layer is blocked - use warning header color
+                lines.append(f"<p style='color: {COLOR_WARNING_HEADER}; font-weight: bold; font-size: 14px;'>"
+                             "⚠️ Your opinion is being blocked!</p>")
+            else:
+                # User layer is winning
+                lines.append(f"<p style='color: {COLOR_IS_FOR_DESC}; font-weight: bold; font-size: 14px;'>"
+                             "✓ Your opinion is winning</p>")
+        else:
+            lines.append(f"<p style='color: {COLOR_WARNING_HEADER};'>"
+                         "ℹ️ User layer not found in opinion stack</p>")
+        
+        # Reason - use emphasis color for key terms
+        reason = d.get('reason')
+        if reason:
+            reason_display = reason.replace("_", " ").title()
+            lines.append(f"<p><b>Reason:</b> <span style='color: {COLOR_EMPHASIS};'>{reason_display}</span></p>")
+        
+        # Blocking layer info - use blocked path color
+        if blocker:
+            blocker_index = d.get('blocker_index', '?')
+            lines.append(f"<p><b>Blocked by:</b> <code style='color: {COLOR_BLOCKED_PATH};'>{blocker}</code> "
+                         f"<span style='color: {COLOR_BLOCKED_PATH};'>(index {blocker_index})</span></p>")
+        
+        lines.append("<hr>")
+        
+        # Arc descriptions and detail (reason code content)
+        reason = d.get('reason', '')
+        if reason:
+            from opinion_trace.reason_codes import get_arc_descriptions, get_scenarios, get_detail
             
-            # Suggestions
-            suggestions = d.get('suggestions', [])
-            if suggestions:
-                lines.append("<p><b>💡 Suggestions:</b></p>")
-                lines.append("<ul>")
-                for suggestion in suggestions:
-                    lines.append(f"<li>{suggestion}</li>")
-                lines.append("</ul>")
+            # Show arc descriptions (for arc type comparisons)
+            arc_descs = get_arc_descriptions(reason)
+            if arc_descs:
+                for arc_name, desc in arc_descs.items():
+                    lines.append(
+                        f"<p><b style='color: {COLOR_ARC_TYPE};'>{arc_name.title()}</b> "
+                        f"<span style='color: {COLOR_IS_FOR_DESC};'>is for: {desc}</span></p>"
+                    )
+            
+            # Show detail text (for non-arc-type reasons like sublayer_order, layer_muted, etc.)
+            detail = get_detail(reason)
+            if detail and not arc_descs:  # Only show detail if no arc_descriptions
+                lines.append(
+                    f"<p style='color: {COLOR_CONDITION};'>{detail}</p>"
+                )
+            
+            # Scenarios (new format)
+            scenarios = get_scenarios(reason)
+            if scenarios:
+                for scenario in scenarios:
+                    if isinstance(scenario, dict):
+                        condition = scenario.get('condition', '')
+                        action = scenario.get('action', '')
+                        if condition and action:
+                            lines.append(
+                                f"<p><span style='color: {COLOR_CONDITION};'>If you want {condition}:</span><br/>"
+                                f"&nbsp;&nbsp;<span style='color: {COLOR_ARROW}; font-weight: bold;'>→</span> "
+                                f"<span style='color: {COLOR_ACTION};'>{action}</span></p>"
+                            )
+                    else:
+                        # Fallback for old format (string)
+                        lines.append(f"<li style='color: {COLOR_CONDITION};'>{scenario}</li>")
+        
+        # Suggestions (old format fallback)
+        suggestions = d.get('suggestions', [])
+        if suggestions and not reason:
+            lines.append(f"<p><b style='color: {COLOR_EMPHASIS};'>Suggestions:</b></p>")
+            lines.append("<ul>")
+            for suggestion in suggestions:
+                lines.append(f"<li style='color: {COLOR_ACTION};'>{suggestion}</li>")
+            lines.append("</ul>")
+        
+        # LIVRPS order violation explanation
+        if d.get('does_not_follow_livrps_order', False):
+            livrps_info = HELPFUL_TEXTS.get('livrps_out_of_order', {})
+            title = livrps_info.get('title', 'LIVRPS Order Information')
+            text = livrps_info.get('text', '')
+            if text:
+                lines.append("<hr>")
+                lines.append(f"<p><b style='color: {COLOR_WARNING_HEADER};'>⚠️ {title}</b></p>")
+                # Convert newlines to <br> and handle paragraph breaks with consistent styling
+                para_style = f"color: {COLOR_CONDITION}; font-size: 11px;"
+                formatted_text = text.replace('\n\n', f'</p><p style="margin-top: 10px; {para_style}">').replace('\n', '<br>')
+                lines.append(f"<p style='{para_style}'>{formatted_text}</p>")
         
         return "".join(lines)
     
@@ -524,14 +650,9 @@ class MainWindow(QMainWindow):
             "error": extraction.error,
         }
     
-    def copy_output(self):
-        """Copy output text from current tab to clipboard."""
-        current_tab = self.output_tabs.currentIndex()
-        if current_tab == 0:
-            text = self.summary_display.toPlainText()
-        else:
-            text = self.json_display.toPlainText()
-        
+    def copy_to_clipboard(self, text_edit: QTextEdit):
+        """Copy text from a QTextEdit to clipboard."""
+        text = text_edit.toPlainText()
         if text:
             clipboard = QApplication.clipboard()
             clipboard.setText(text)
