@@ -2,6 +2,9 @@
 
 A CLI and GUI tool that traces USD attribute opinion resolution and explains why edits may be blocked by LIVRPS composition rules.
 
+<img width="402" height="266" alt="image" src="https://github.com/user-attachments/assets/dc3f3f65-ff87-4fcc-8076-17b8d12aa785" />
+
+
 ## Installation
 
 The simplest way to use this tool is to install directly from Github and run the GUI:
