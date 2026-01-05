@@ -38,12 +38,13 @@ python usd_opinion_trace_gui.py
 usd-opinion-trace-gui
 ```
 
-The GUI provides:
-- File browser for selecting USD stage and layer files
-- Input fields for prim path and attribute name
-- Optional time code selection
-- Stack-only mode toggle
-- JSON output display with copy-to-clipboard
+There is a sample scene provided in this repo. Open sample_scenes and select:
+- Stage: sample_scene/shot.usda
+- Prim: /World/Avocado
+- Attrib: xformOpOrder
+- Scene: sample_scene/assets/avocado/avocado.usda
+
+Then press on 'Run Trace' should bring up an opinion stack with 3 arcs, and a diagnosis of `Arc Type Inherit Over Reference`.
 
 ## CLI Usage
 
