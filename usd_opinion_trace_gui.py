@@ -15,7 +15,305 @@ from PySide6.QtWidgets import (
     QCompleter, QTabWidget, QSplitter
 )
 from PySide6.QtCore import Qt, QThread, Signal
-from PySide6.QtGui import QFont, QColor
+from PySide6.QtGui import QFont, QColor, QPalette
+
+
+def apply_dark_theme(app: QApplication):
+    """Apply a dark color theme to the application."""
+    app.setStyle("Fusion")
+    
+    dark_palette = QPalette()
+    
+    # Base colors
+    dark_palette.setColor(QPalette.Window, QColor(30, 30, 30))
+    dark_palette.setColor(QPalette.WindowText, QColor(220, 220, 220))
+    dark_palette.setColor(QPalette.Base, QColor(45, 45, 45))
+    dark_palette.setColor(QPalette.AlternateBase, QColor(55, 55, 55))
+    dark_palette.setColor(QPalette.ToolTipBase, QColor(45, 45, 45))
+    dark_palette.setColor(QPalette.ToolTipText, QColor(220, 220, 220))
+    dark_palette.setColor(QPalette.Text, QColor(220, 220, 220))
+    dark_palette.setColor(QPalette.Button, QColor(55, 55, 55))
+    dark_palette.setColor(QPalette.ButtonText, QColor(220, 220, 220))
+    dark_palette.setColor(QPalette.BrightText, QColor(255, 255, 255))
+    dark_palette.setColor(QPalette.Link, QColor(100, 149, 237))
+    dark_palette.setColor(QPalette.Highlight, QColor(70, 130, 180))
+    dark_palette.setColor(QPalette.HighlightedText, QColor(255, 255, 255))
+    
+    # Disabled colors
+    dark_palette.setColor(QPalette.Disabled, QPalette.WindowText, QColor(127, 127, 127))
+    dark_palette.setColor(QPalette.Disabled, QPalette.Text, QColor(127, 127, 127))
+    dark_palette.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(127, 127, 127))
+    
+    app.setPalette(dark_palette)
+    
+    # Additional stylesheet for finer control
+    app.setStyleSheet("""
+        QGroupBox {
+            border: 1px solid #555;
+            border-radius: 5px;
+            margin-top: 1ex;
+            padding-top: 10px;
+            font-weight: bold;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            subcontrol-position: top left;
+            padding: 0 5px;
+            color: #ddd;
+        }
+        QLineEdit, QComboBox, QSpinBox, QTextEdit {
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            border-radius: 3px;
+            padding: 4px;
+            color: #ddd;
+        }
+        QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QTextEdit:focus {
+            border: 1px solid #6495ED;
+        }
+        QPushButton {
+            background-color: #4a4a4a;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 6px 12px;
+            color: #ddd;
+        }
+        QPushButton:hover {
+            background-color: #5a5a5a;
+            border: 1px solid #6495ED;
+        }
+        QPushButton:pressed {
+            background-color: #3a3a3a;
+        }
+        QTabWidget::pane {
+            border: 1px solid #555;
+            border-radius: 3px;
+        }
+        QTabBar::tab {
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            border-bottom: none;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            padding: 6px 12px;
+            color: #bbb;
+        }
+        QTabBar::tab:selected {
+            background-color: #4a4a4a;
+            color: #fff;
+        }
+        QTabBar::tab:hover:!selected {
+            background-color: #454545;
+        }
+        QSplitter::handle {
+            background-color: #555;
+        }
+        QCheckBox {
+            color: #ddd;
+        }
+        QCheckBox::indicator {
+            width: 16px;
+            height: 16px;
+        }
+        QScrollBar:vertical {
+            background-color: #2d2d2d;
+            width: 12px;
+            border-radius: 6px;
+        }
+        QScrollBar::handle:vertical {
+            background-color: #555;
+            border-radius: 6px;
+            min-height: 20px;
+        }
+        QScrollBar::handle:vertical:hover {
+            background-color: #666;
+        }
+        QScrollBar:horizontal {
+            background-color: #2d2d2d;
+            height: 12px;
+            border-radius: 6px;
+        }
+        QScrollBar::handle:horizontal {
+            background-color: #555;
+            border-radius: 6px;
+            min-width: 20px;
+        }
+        QScrollBar::add-line, QScrollBar::sub-line {
+            height: 0;
+            width: 0;
+        }
+    """)
+
+
+def apply_light_theme(app: QApplication):
+    """Apply a light color theme to the application."""
+    app.setStyle("Fusion")
+    
+    light_palette = QPalette()
+    
+    # Base colors
+    light_palette.setColor(QPalette.Window, QColor(240, 240, 240))
+    light_palette.setColor(QPalette.WindowText, QColor(30, 30, 30))
+    light_palette.setColor(QPalette.Base, QColor(255, 255, 255))
+    light_palette.setColor(QPalette.AlternateBase, QColor(245, 245, 245))
+    light_palette.setColor(QPalette.ToolTipBase, QColor(255, 255, 220))
+    light_palette.setColor(QPalette.ToolTipText, QColor(30, 30, 30))
+    light_palette.setColor(QPalette.Text, QColor(30, 30, 30))
+    light_palette.setColor(QPalette.Button, QColor(240, 240, 240))
+    light_palette.setColor(QPalette.ButtonText, QColor(30, 30, 30))
+    light_palette.setColor(QPalette.BrightText, QColor(0, 0, 0))
+    light_palette.setColor(QPalette.Link, QColor(0, 100, 200))
+    light_palette.setColor(QPalette.Highlight, QColor(70, 130, 180))
+    light_palette.setColor(QPalette.HighlightedText, QColor(255, 255, 255))
+    
+    # Disabled colors
+    light_palette.setColor(QPalette.Disabled, QPalette.WindowText, QColor(150, 150, 150))
+    light_palette.setColor(QPalette.Disabled, QPalette.Text, QColor(150, 150, 150))
+    light_palette.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(150, 150, 150))
+    
+    app.setPalette(light_palette)
+    
+    # Additional stylesheet for finer control
+    app.setStyleSheet("""
+        QGroupBox {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 1ex;
+            padding-top: 10px;
+            font-weight: bold;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            subcontrol-position: top left;
+            padding: 0 5px;
+            color: #333;
+        }
+        QLineEdit, QComboBox, QSpinBox, QTextEdit {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 4px;
+            color: #333;
+        }
+        QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QTextEdit:focus {
+            border: 1px solid #4a90d9;
+        }
+        QPushButton {
+            background-color: #e8e8e8;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 6px 12px;
+            color: #333;
+        }
+        QPushButton:hover {
+            background-color: #d8d8d8;
+            border: 1px solid #4a90d9;
+        }
+        QPushButton:pressed {
+            background-color: #c8c8c8;
+        }
+        QTabWidget::pane {
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        QTabBar::tab {
+            background-color: #e8e8e8;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            padding: 6px 12px;
+            color: #555;
+        }
+        QTabBar::tab:selected {
+            background-color: #fff;
+            color: #333;
+        }
+        QTabBar::tab:hover:!selected {
+            background-color: #f0f0f0;
+        }
+        QSplitter::handle {
+            background-color: #ccc;
+        }
+        QCheckBox {
+            color: #333;
+        }
+        QCheckBox::indicator {
+            width: 16px;
+            height: 16px;
+        }
+        QScrollBar:vertical {
+            background-color: #f0f0f0;
+            width: 12px;
+            border-radius: 6px;
+        }
+        QScrollBar::handle:vertical {
+            background-color: #c0c0c0;
+            border-radius: 6px;
+            min-height: 20px;
+        }
+        QScrollBar::handle:vertical:hover {
+            background-color: #a0a0a0;
+        }
+        QScrollBar:horizontal {
+            background-color: #f0f0f0;
+            height: 12px;
+            border-radius: 6px;
+        }
+        QScrollBar::handle:horizontal {
+            background-color: #c0c0c0;
+            border-radius: 6px;
+            min-width: 20px;
+        }
+        QScrollBar::add-line, QScrollBar::sub-line {
+            height: 0;
+            width: 0;
+        }
+    """)
+
+
+# Theme color definitions for HTML content
+DARK_THEME_COLORS = {
+    'bg_header': '#3a3a3a',
+    'bg_winning': '#1a3d1a',
+    'bg_user_blocked': '#4a3a1a',
+    'text': '#dcdcdc',
+    'text_muted': '#888',
+    'status_win': '#4ade80',
+    'status_warn': '#fbbf24',
+    'code_bg': '#2d2d2d',
+    'warning_header': '#fbbf24',
+    'arc_type': '#60a5fa',
+    'blocked_path': '#9ca3af',
+    'is_for_desc': '#4ade80',
+    'condition': '#d1d5db',
+    'arrow': '#22d3ee',
+    'action': '#93c5fd',
+    'emphasis': '#c4b5fd',
+    'bg_accent': '#3a3a3a',
+    'hr_color': '#555',
+}
+
+LIGHT_THEME_COLORS = {
+    'bg_header': '#f0f0f0',
+    'bg_winning': '#d4edda',
+    'bg_user_blocked': '#fff3cd',
+    'text': '#1e1e1e',
+    'text_muted': '#666',
+    'status_win': '#28a745',
+    'status_warn': '#d97706',
+    'code_bg': '#f5f5f5',
+    'warning_header': '#b45309',
+    'arc_type': '#0369a1',
+    'blocked_path': '#6b7280',
+    'is_for_desc': '#15803d',
+    'condition': '#374151',
+    'arrow': '#0891b2',
+    'action': '#1e40af',
+    'emphasis': '#7c3aed',
+    'bg_accent': '#f3f4f6',
+    'hr_color': '#ccc',
+}
 
 from opinion_trace.extraction import extract_opinions
 from opinion_trace.diagnosis import diagnose
@@ -67,6 +365,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("USD Opinion Trace by havocado")
         self.setMinimumSize(1200, 700)
+        
+        # Theme state
+        self.dark_mode = True
+        self._app = QApplication.instance()
         
         # Cache for prim->attributes mapping
         self.prim_attrs_cache = {}
@@ -254,7 +556,21 @@ class MainWindow(QMainWindow):
         splitter.addWidget(right_group)
         splitter.setSizes([600, 600])
         
-        main_layout.addWidget(splitter)
+        # Main vertical layout to hold splitter and bottom bar
+        content_layout = QVBoxLayout()
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.addWidget(splitter, stretch=1)
+        
+        # Bottom bar with dark mode toggle
+        bottom_bar = QHBoxLayout()
+        bottom_bar.addStretch()
+        self.dark_mode_button = QPushButton("Light Mode")
+        self.dark_mode_button.setFixedWidth(120)
+        self.dark_mode_button.clicked.connect(self.toggle_dark_mode)
+        bottom_bar.addWidget(self.dark_mode_button)
+        content_layout.addLayout(bottom_bar)
+        
+        main_layout.addLayout(content_layout)
     
     def browse_stage(self):
         """Open file dialog to select USD stage file."""
@@ -427,34 +743,46 @@ class MainWindow(QMainWindow):
         """Build HTML for the Opinion Stack panel (left column)."""
         lines = []
         
+        # Get current theme colors
+        c = self.get_theme_colors()
+        COLOR_BG_HEADER = c['bg_header']
+        COLOR_BG_WINNING = c['bg_winning']
+        COLOR_BG_USER_BLOCKED = c['bg_user_blocked']
+        COLOR_TEXT = c['text']
+        COLOR_TEXT_MUTED = c['text_muted']
+        COLOR_STATUS_WIN = c['status_win']
+        COLOR_STATUS_WARN = c['status_warn']
+        COLOR_CODE_BG = c['code_bg']
+        COLOR_HR = c['hr_color']
+        
         # Opinion stack table
         if not extraction.opinions:
-            lines.append("<p><i>No opinions found for this attribute.</i></p>")
+            lines.append(f"<p style='color: {COLOR_TEXT};'><i>No opinions found for this attribute.</i></p>")
         else:
             lines.append("<table style='border-collapse: collapse; width: 100%;'>")
-            lines.append("<tr style='background-color: #f0f0f0;'>"
-                         "<th style='padding: 6px; text-align: left;'>#</th>"
-                         "<th style='padding: 6px; text-align: left;'>Layer</th>"
-                         "<th style='padding: 6px; text-align: left;'>Arc</th>"
-                         "<th style='padding: 6px; text-align: left;'>Value</th>"
-                         "<th style='padding: 6px; text-align: left;'>Status</th>"
+            lines.append(f"<tr style='background-color: {COLOR_BG_HEADER};'>"
+                         f"<th style='padding: 6px; text-align: left; color: {COLOR_TEXT};'>#</th>"
+                         f"<th style='padding: 6px; text-align: left; color: {COLOR_TEXT};'>Layer</th>"
+                         f"<th style='padding: 6px; text-align: left; color: {COLOR_TEXT};'>Arc</th>"
+                         f"<th style='padding: 6px; text-align: left; color: {COLOR_TEXT};'>Value</th>"
+                         f"<th style='padding: 6px; text-align: left; color: {COLOR_TEXT};'>Status</th>"
                          "</tr>")
             
             for o in extraction.opinions:
                 # Determine row styling
                 is_user = user_layer and user_layer in (o.layer_identifier, o.layer_name)
                 if o.index == 0:
-                    row_style = "background-color: #d4edda;"  # Green for winning
+                    row_style = f"background-color: {COLOR_BG_WINNING};"
                     status = "✓ WINNING"
-                    status_color = "green"
+                    status_color = COLOR_STATUS_WIN
                 elif is_user:
-                    row_style = "background-color: #fff3cd;"  # Yellow for user layer
+                    row_style = f"background-color: {COLOR_BG_USER_BLOCKED};"
                     status = "⚠ BLOCKED"
-                    status_color = "orange"
+                    status_color = COLOR_STATUS_WARN
                 else:
                     row_style = ""
                     status = "blocked"
-                    status_color = "gray"
+                    status_color = COLOR_TEXT_MUTED
                 
                 # Truncate value for display
                 val_str = str(o.value)
@@ -471,52 +799,55 @@ class MainWindow(QMainWindow):
                     val_str = "<i>BLOCKED</i>"
                 
                 lines.append(f"<tr style='{row_style}'>"
-                             f"<td style='padding: 6px;'>{o.index}</td>"
-                             f"<td style='padding: 6px;'>{layer_display}</td>"
-                             f"<td style='padding: 6px;'>{o.arc_type or 'direct'}</td>"
-                             f"<td style='padding: 6px;'><code>{val_str}</code></td>"
+                             f"<td style='padding: 6px; color: {COLOR_TEXT};'>{o.index}</td>"
+                             f"<td style='padding: 6px; color: {COLOR_TEXT};'>{layer_display}</td>"
+                             f"<td style='padding: 6px; color: {COLOR_TEXT};'>{o.arc_type or 'direct'}</td>"
+                             f"<td style='padding: 6px;'><code style='background-color: {COLOR_CODE_BG}; padding: 2px 4px; border-radius: 3px; color: {COLOR_TEXT};'>{val_str}</code></td>"
                              f"<td style='padding: 6px; color: {status_color};'>{status}</td>"
                              "</tr>")
             
             lines.append("</table>")
         
-        lines.append("<hr>")
+        lines.append(f"<hr style='border-color: {COLOR_HR};'>")
         
         # Header section (moved to bottom)
-        lines.append(f"<h4>Opinion Trace for <code>{extraction.attr_name}</code></h4>")
-        lines.append(f"<p><b>Prim:</b> <code>{extraction.prim_path}</code></p>")
+        lines.append(f"<h4 style='color: {COLOR_TEXT};'>Opinion Trace for <code style='background-color: {COLOR_CODE_BG}; padding: 2px 4px; border-radius: 3px; color: {COLOR_TEXT};'>{extraction.attr_name}</code></h4>")
+        lines.append(f"<p style='color: {COLOR_TEXT};'><b>Prim:</b> <code style='background-color: {COLOR_CODE_BG}; padding: 2px 4px; border-radius: 3px;'>{extraction.prim_path}</code></p>")
         
         # Resolved value
         value_str = str(extraction.resolved_value)
         if len(value_str) > 100:
             value_str = value_str[:100] + "..."
-        lines.append(f"<p><b>Resolved Value:</b> <code>{value_str}</code> "
-                     f"<span style='color: gray;'>({extraction.resolved_value_type})</span></p>")
+        lines.append(f"<p style='color: {COLOR_TEXT};'><b>Resolved Value:</b> <code style='background-color: {COLOR_CODE_BG}; padding: 2px 4px; border-radius: 3px;'>{value_str}</code> "
+                     f"<span style='color: {COLOR_TEXT_MUTED};'>({extraction.resolved_value_type})</span></p>")
         
         # Time code if specified
         if extraction.time_code is not None:
-            lines.append(f"<p><b>Time Code:</b> {extraction.time_code}</p>")
+            lines.append(f"<p style='color: {COLOR_TEXT};'><b>Time Code:</b> {extraction.time_code}</p>")
         
         return "".join(lines)
     
     def build_diagnosis_html(self, extraction, diagnosis, user_layer: str | None) -> str:
         """Build HTML for the Diagnosis panel (right column)."""
-        # Color scheme constants
-        COLOR_WARNING_HEADER = "#B45309"   # Dark amber
-        COLOR_ARC_TYPE = "#0369A1"         # Teal/Blue
-        COLOR_BLOCKED_PATH = "#6B7280"     # Medium gray
-        COLOR_IS_FOR_DESC = "#15803D"      # Forest green
-        COLOR_CONDITION = "#374151"        # Dark gray
-        COLOR_ARROW = "#0891B2"            # Teal
-        COLOR_ACTION = "#1E40AF"           # Dark blue
-        COLOR_EMPHASIS = "#7C3AED"         # Purple
-        COLOR_BG_ACCENT = "#F3F4F6"        # Very light gray
+        # Get current theme colors
+        c = self.get_theme_colors()
+        COLOR_WARNING_HEADER = c['warning_header']
+        COLOR_ARC_TYPE = c['arc_type']
+        COLOR_BLOCKED_PATH = c['blocked_path']
+        COLOR_IS_FOR_DESC = c['is_for_desc']
+        COLOR_CONDITION = c['condition']
+        COLOR_ARROW = c['arrow']
+        COLOR_ACTION = c['action']
+        COLOR_EMPHASIS = c['emphasis']
+        COLOR_BG_ACCENT = c['bg_accent']
+        COLOR_TEXT = c['text']
+        COLOR_HR = c['hr_color']
         
         lines = []
         
         if not diagnosis:
-            lines.append("<p><i>No diagnosis available.</i></p>")
-            lines.append("<p style='color: #666;'>Enable diagnosis by specifying a User Layer "
+            lines.append(f"<p style='color: {COLOR_TEXT};'><i>No diagnosis available.</i></p>")
+            lines.append(f"<p style='color: {COLOR_BLOCKED_PATH};'>Enable diagnosis by specifying a User Layer "
                          "and unchecking 'Stack only'.</p>")
             return "".join(lines)
         
@@ -547,15 +878,15 @@ class MainWindow(QMainWindow):
         reason = d.get('reason')
         if reason:
             reason_display = reason.replace("_", " ").title()
-            lines.append(f"<p><b>Reason:</b> <span style='color: {COLOR_EMPHASIS};'>{reason_display}</span></p>")
+            lines.append(f"<p style='color: {COLOR_TEXT};'><b>Reason:</b> <span style='color: {COLOR_EMPHASIS};'>{reason_display}</span></p>")
         
         # Blocking layer info - use blocked path color
         if blocker:
             blocker_index = d.get('blocker_index', '?')
-            lines.append(f"<p><b>Blocked by:</b> <code style='color: {COLOR_BLOCKED_PATH};'>{blocker}</code> "
+            lines.append(f"<p style='color: {COLOR_TEXT};'><b>Blocked by:</b> <code style='background-color: {COLOR_BG_ACCENT}; padding: 2px 4px; border-radius: 3px; color: {COLOR_BLOCKED_PATH};'>{blocker}</code> "
                          f"<span style='color: {COLOR_BLOCKED_PATH};'>(index {blocker_index})</span></p>")
         
-        lines.append("<hr>")
+        lines.append(f"<hr style='border-color: {COLOR_HR};'>")
         
         # Arc descriptions and detail (reason code content)
         reason = d.get('reason', '')
@@ -598,8 +929,8 @@ class MainWindow(QMainWindow):
         # Suggestions (old format fallback)
         suggestions = d.get('suggestions', [])
         if suggestions and not reason:
-            lines.append(f"<p><b style='color: {COLOR_EMPHASIS};'>Suggestions:</b></p>")
-            lines.append("<ul>")
+            lines.append(f"<p style='color: {COLOR_TEXT};'><b style='color: {COLOR_EMPHASIS};'>Suggestions:</b></p>")
+            lines.append("<ul style='color: {COLOR_TEXT};'>")
             for suggestion in suggestions:
                 lines.append(f"<li style='color: {COLOR_ACTION};'>{suggestion}</li>")
             lines.append("</ul>")
@@ -656,12 +987,40 @@ class MainWindow(QMainWindow):
         if text:
             clipboard = QApplication.clipboard()
             clipboard.setText(text)
+    
+    def get_theme_colors(self) -> dict:
+        """Get the current theme's color dictionary."""
+        return DARK_THEME_COLORS if self.dark_mode else LIGHT_THEME_COLORS
+    
+    def toggle_dark_mode(self):
+        """Toggle between dark and light mode."""
+        self.dark_mode = not self.dark_mode
+        
+        if self.dark_mode:
+            apply_dark_theme(self._app)
+            self.dark_mode_button.setText("Light Mode")
+        else:
+            apply_light_theme(self._app)
+            self.dark_mode_button.setText("Dark Mode")
+        
+        # Re-render HTML content if there's existing content
+        if self.stack_display.toPlainText() and "Running trace" not in self.stack_display.toPlainText():
+            # Trigger a re-run if we have valid inputs
+            try:
+                valid, _ = self.validate_inputs()
+                if valid:
+                    self.run_trace()
+            except:
+                pass  # Ignore errors, just don't re-render
 
 
 def main():
     """Main GUI entry point."""
     app = QApplication(sys.argv)
     app.setApplicationName("USD Opinion Trace")
+    
+    # Apply dark theme
+    apply_dark_theme(app)
     
     window = MainWindow()
     window.show()
