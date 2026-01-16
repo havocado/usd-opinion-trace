@@ -18,7 +18,7 @@ usd-opinion-trace-gui
 
 That's it! You are good to go.
 
-## How to use
+## Sample scene
 
 There is a sample scene provided in this repo.
 
