@@ -18,7 +18,11 @@ usd-opinion-trace-gui
 
 That's it! You are good to go.
 
-There is a sample scene provided in this repo. Open sample_scenes and select:
+## How to use
+
+There is a sample scene provided in this repo.
+
+Open sample_scenes and select:
 - Stage: sample_scene/shot.usda
 - Prim: /World/Avocado
 - Attrib: xformOpOrder
