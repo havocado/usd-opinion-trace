@@ -39,9 +39,8 @@ usd-opinion-trace-gui = "usd_opinion_trace_gui:main"
 
 [tool.setuptools]
 py-modules = ["usd_opinion_trace", "usd_opinion_trace_gui"]
-
-[tool.setuptools.packages.find]
-where = ["src"]
+packages = ["opinion_trace"]
+package-dir = {"opinion_trace" = "src/opinion_trace"}
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
