@@ -7,6 +7,8 @@ A CLI and GUI tool that traces USD attribute opinion resolution and explains why
 
 ## How to use
 
+Python is required - download it [here](https://www.python.org/downloads/)
+
 The simplest way to use this tool is to install directly from Github and run the GUI:
 ```bash
 # Install from Github
